@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  go:
+    build:
+      context: .
+      dockerfile: go/Dockerfile
+    container_name: go
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./go:/app
+    working_dir: /app
+
+  react:
+    build:
+      context: .
+      dockerfile: react/Dockerfile
+    container_name: react
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./react/vite-project:/app
+    working_dir: /app
+    stdin_open: true
+    tty: true
