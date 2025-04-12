@@ -1,18 +1,26 @@
-# Node.js公式イメージ
-FROM node:20
-
+# ビルドステージ
+FROM node:20 AS builder
 WORKDIR /app
+COPY react/vite-project/package*.json ./
+RUN npm install
+COPY react/vite-project .
+RUN npm run build
 
-# 依存関係のインストール
-COPY package*.json ./
-# RUN npm install
+# 本番ステージ
+FROM node:20-alpine AS production
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+RUN npm install -g serve
+USER node
+CMD ["serve", "-s", "dist", "-l", "3000"]
 
-# ソースコードのコピー
-COPY . .
-
-# 開発用サーバー起動
+# 開発ステージ
+FROM node:20 AS development
+WORKDIR /app
+COPY react/vite-project/package*.json ./
+RUN npm install
+COPY react/vite-project .
+USER node
 CMD ["npm", "run", "dev"]
-
-# 本番用ビルド
-# RUN npm run build
-# CMD ["npm", "run", "preview"]

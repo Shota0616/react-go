@@ -5,22 +5,36 @@ services:
     build:
       context: .
       dockerfile: go/Dockerfile
+      target: ${ENV_MODE:-development}
     container_name: go
     ports:
       - "8080:8080"
     volumes:
       - ./go:/app
     working_dir: /app
+    environment:
+      - ENV_MODE=${ENV_MODE:-development}
+    networks:
+      - app-network
 
   react:
     build:
       context: .
       dockerfile: react/Dockerfile
+      target: ${ENV_MODE:-development}
     container_name: react
     ports:
       - "3000:3000"
     volumes:
       - ./react/vite-project:/app
     working_dir: /app
+    environment:
+      - NODE_ENV=${ENV_MODE:-development}
+    networks:
+      - app-network
     stdin_open: true
     tty: true
+
+networks:
+  app-network:
+    driver: bridge

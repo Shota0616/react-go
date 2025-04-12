@@ -1,21 +1,25 @@
-# Go公式イメージ
-FROM golang:1.22.4
+# ビルドステージ
+FROM golang:1.22.4 AS builder
 
 WORKDIR /app
-
-# ソースコードのコピー
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main main.go
 
-# コンテナbuild時に実行するコマンド
-# 依存関係のインストール
-# RUN go mod download
-# CompileDaemon のインストール
+# 本番ステージ
+FROM alpine:latest AS production
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/main .
+COPY --from=builder /app/.env .
+RUN chown nobody:nobody /root/main
+USER nobody
+CMD ["./main"]
+
+# 開発ステージ
+FROM golang:1.22.4 AS development
+WORKDIR /app
 RUN go install github.com/githubnemo/CompileDaemon@latest
-
-# 開発環境では CompileDaemon で自動再ビルドし、本番環境ではビルド済みのファイルを実行
-# CMDはコンテナ起動時に実行されるコマンド
-CMD if [ "$ENV_MODE" = "production" ]; then \
-        ./main; \
-    else \
-        CompileDaemon -build="go build -o main main.go" -command="./main"; \
-    fi
+COPY . .
+CMD CompileDaemon -build="go build -o main main.go" -command="./main"
