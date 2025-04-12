@@ -13,7 +13,11 @@ services:
       - ./go:/app
     working_dir: /app
     environment:
-      - ENV_MODE=${ENV_MODE:-development}
+      ENV_MODE: ${ENV_MODE:-development}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - app-network
 
@@ -35,6 +39,28 @@ services:
     stdin_open: true
     tty: true
 
+  mysql:
+    build:
+      context: .
+      dockerfile: mysql/Dockerfile
+    container_name: mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ}
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mysql_data:

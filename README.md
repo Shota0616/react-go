@@ -17,7 +17,7 @@ cd react-go
 
 2. 環境変数ファイルの作成:
 ```bash
-cp go/.env.example go/.env
+cp .env.example .env
 ```
 
 ## viteプロジェクト作成
@@ -41,6 +41,7 @@ docker-compose up --build
 ```
 
 - Go API: http://localhost:8080/api/hello
+- Go API: http://localhost:8080/api/db-test
 - Reactアプリ: http://localhost:3000
 
 ## 本番環境のビルドと起動
@@ -66,8 +67,3 @@ ENV_MODE=production docker-compose up --build
 │   └── vite-project/  # Viteプロジェクト
 └── docker-compose.yml # 全体のDocker設定
 ```
-
-## 環境変数
-
-Goバックエンド用の環境変数は`go/.env`に設定します。
-
