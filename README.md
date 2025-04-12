@@ -11,13 +11,27 @@
 
 1. リポジトリをクローン:
 ```bash
-git clone https://github.com/your-repo/react-go-template.git
-cd react-go-template
+git clone git@github.com:Shota0616/react-go.git
+cd react-go
 ```
 
 2. 環境変数ファイルの作成:
 ```bash
 cp go/.env.example go/.env
+```
+
+## viteプロジェクト作成
+
+```bash
+cd react
+docker run --rm -it -v "$PWD":/app -w /app node:20 bash
+```
+
+```bash
+npm create vite@latest
+cd vite-project/
+npm install
+exit
 ```
 
 ## 開発環境の起動

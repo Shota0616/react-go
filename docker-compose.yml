@@ -24,7 +24,7 @@ services:
       target: ${ENV_MODE:-development}
     container_name: react
     ports:
-      - "3000:3000"
+      - "5173:5173"
     volumes:
       - ./react/vite-project:/app
     working_dir: /app

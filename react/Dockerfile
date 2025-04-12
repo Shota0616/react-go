@@ -14,13 +14,13 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 RUN npm install -g serve
 USER node
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "5173"]
 
 # 開発ステージ
 FROM node:20 AS development
 WORKDIR /app
 COPY react/vite-project/package*.json ./
-RUN npm install
+RUN npm install -g vite && npm install
 COPY react/vite-project .
 USER node
-CMD ["npm", "run", "dev"]
+CMD ["vite", "dev", "--host", "0.0.0.0"]
