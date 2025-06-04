@@ -1,26 +1,15 @@
-# ビルドステージ
-FROM node:20 AS builder
-WORKDIR /app
-COPY react/vite-project/package*.json ./
-RUN npm install
-COPY react/vite-project .
-RUN npm run build
+# ベースイメージ
+FROM node:18
 
-# 本番ステージ
-FROM node:20-alpine AS production
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-RUN npm install -g serve
-USER node
-CMD ["serve", "-s", "dist", "-l", "5173"]
+WORKDIR /var/www/vite-project
 
-# 開発ステージ
-FROM node:20 AS development
-WORKDIR /app
-COPY react/vite-project/package*.json ./
-RUN npm install -g vite && npm install
-COPY react/vite-project .
-USER node
-CMD ["vite", "dev", "--host", "0.0.0.0"]
+# プロジェクトファイルをコピー
+COPY ./project/ /var/www/vite-project/
+COPY ./startup.sh /startup.sh
+
+# コンテナbuild時に実行するコマンド
+# startupのスクリプトに実行権限付与
+RUN chmod 755 /startup.sh
+
+# 起動スクリプトの実行, 本番環境ではビルド後の静的ファイルを提供する
+CMD ["/startup.sh"]

@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  react:
+    container_name: react
+    build:
+      context: ./react
+    volumes:
+      - ./react/project:/var/www/vite-project
+      # - ./locales:/var/www/locales
+    environment:
+      TZ: ${TZ}
+      URL_PROD: ${URL_PROD}
+      NODE_ENV: ${ENV_MODE}
+      URL_DEVELOP: ${URL_DEVELOP}
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "5173:5173"
+    tty: true
+    stdin_open: true
+    networks:
+      - default
+
+  go:
+    container_name: go
+    restart: always
+    build:
+      context: ./go
+    volumes:
+      - ./go:/usr/src/app
+      # - ./locales:/usr/src/locales
+    environment:
+      TZ: ${TZ}
+      URL_DEVELOP: ${URL_DEVELOP}
+      URL_PROD: ${URL_PROD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET : ${JWT_REFRESH_SECRET}
+      NODE_ENV: ${ENV_MODE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+    expose:
+      - "8080"
+    tty: true
+    stdin_open: true
+    depends_on:
+      - mysql
+    networks:
+      - default
+
+  nginx:
+    container_name: nginx
+    restart: always
+    build:
+      context: ./nginx
+    volumes:
+      - ./etc/nginx/:/etc/nginx/
+      # - ./var/log/nginx/:/var/log/nginx/
+      - ./react/project/dist:/usr/share/nginx/html
+      - ./etc/letsencrypt/:/etc/letsencrypt/
+      - ./etc/logrotate.d/:/etc/logrotate.d/
+    environment:
+      TZ: ${TZ}
+      NODE_ENV: ${ENV_MODE}
+    ports:
+      - "80:80"
+    entrypoint: ["/bin/sh", "-c", "/etc/nginx/generate_nginx_conf.sh && nginx -g 'daemon off;'"]
+    depends_on:
+      - react
+      - go
+    networks:
+      - default
+
+  mysql:
+    container_name: mysql
+    build:
+      context: ./mysql
+    volumes:
+      - ./var/lib/mysql/:/var/lib/mysql/
+      - ./mysql/backup:/backup
+      - ./etc/my.cnf:/etc/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+      TZ: ${TZ}
+      NODE_ENV: ${ENV_MODE}
+    expose:
+      - "3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    tty: true
+    stdin_open: true
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.112.0/24

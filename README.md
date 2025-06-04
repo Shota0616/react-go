@@ -37,12 +37,13 @@ exit
 ## 開発環境の起動
 
 ```bash
-docker-compose up --build
+docker compose -f docker-compose-develop.yaml up -d
 ```
 
 - Go API: http://localhost:8080/api/hello
 - Go API: http://localhost:8080/api/db-test
-- Reactアプリ: http://localhost:3000
+- Reactアプリ: http://localhost:5173
+- Nginx: http://localhost:80
 
 ## 本番環境のビルドと起動
 
@@ -53,17 +54,4 @@ ENV_MODE=production docker-compose up --build
 ### ENV_MODEについて
 - `development` (デフォルト): ホットリロード有効の開発用設定
 - `production`: 最適化された本番用ビルド
-- docker-compose.ymlと各Dockerfileでこの値を使用してビルドターゲットを切り替え
 
-## ディレクトリ構成
-
-```
-.
-├── go/                # Goバックエンド
-│   ├── main.go        # メインアプリケーション
-│   ├── go.mod         # Goモジュール定義
-│   └── Dockerfile     # Goコンテナ設定
-├── react/             # Reactフロントエンド
-│   └── vite-project/  # Viteプロジェクト
-└── docker-compose.yml # 全体のDocker設定
-```
